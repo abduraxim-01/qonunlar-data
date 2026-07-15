@@ -1,0 +1,50 @@
+[
+  {
+    "operatsiya_nomi": "Xodimlarga oylik ish haqi hisoblanganda",
+    "debit": "9420",
+    "kredit": "6710",
+    "izoh": "Ma'muriy xarajatlar / Mehnatga haq to'lash bo'yicha qarz"
+  },
+  {
+    "operatsiya_nomi": "Xodimning oyligidan Daromad solig'i (JShODS - 12%) ushlab qolinganda",
+    "debit": "6710",
+    "kredit": "6410",
+    "izoh": "Xodimning qarzi kamayadi / Budjet oldidagi qarz hosil bo'ladi"
+  },
+  {
+    "operatsiya_nomi": "Korxona hisobidan Ijtimoiy soliq (12%) hisoblanganda",
+    "debit": "9420",
+    "kredit": "6520",
+    "izoh": "Ma'muriy xarajatlar / Davlat maqsadli jamg'armalariga qarz"
+  },
+  {
+    "operatsiya_nomi": "Daromad solig'i ichidan INPS (ShJBPH - 0.1%) ajratib olinganda",
+    "debit": "6410",
+    "kredit": "6530",
+    "izoh": "Budjetga to'lov kamayadi / Xalq banki oldidagi qarz hosil bo'ladi"
+  },
+  {
+    "operatsiya_nomi": "Daromad solig'i (JShODS) bankdan budjetga to'langanda",
+    "debit": "6410",
+    "kredit": "5110",
+    "izoh": "Budjet oldidagi qarz yopiladi / Hisob-kitob varag'idan pul kamayadi"
+  },
+  {
+    "operatsiya_nomi": "Ijtimoiy soliq bankdan budjetga to'langanda",
+    "debit": "6520",
+    "kredit": "5110",
+    "izoh": "Jamg'arma oldidagi qarz yopiladi / Hisob-kitob varag'idan pul kamayadi"
+  },
+  {
+    "operatsiya_nomi": "INPS pullari bankdan Xalq bankiga o'tkazilganda",
+    "debit": "6530",
+    "kredit": "5110",
+    "izoh": "INPS qarzi yopiladi / Hisob-kitob varag'idan pul kamayadi"
+  },
+  {
+    "operatsiya_nomi": "Xodimlarning plastik kartalariga oylik o'tkazib berilganda",
+    "debit": "6710",
+    "kredit": "5110",
+    "izoh": "Xodimlar oldidagi qarz to'liq yopiladi / Hisob-kitob varag'idan pul ketadi"
+  }
+]

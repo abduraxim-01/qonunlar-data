@@ -1,0 +1,25 @@
+{
+  "indicators": {
+    "bhm": 440000,
+    "mhtekm": 1360000
+  },
+  "tax_rates": {
+    "jshods_pit": 0.12,
+    "ijtimoiy_soliq_commercial": 0.12,
+    "inps_shjbph": 0.001,
+    "qqs_vat": 0.12,
+    "profit_tax_export": 0.15
+  },
+  "bhms_chart_of_accounts": {
+    "9420": "Ma'muriy xarajatlar schyoti (Oylik xarajati Debitlanadi)",
+    "2010": "Asosiy ishlab chiqarish xarajatlari schyoti",
+    "6710": "Mehnatga haq to‘lash bo‘yicha xodimlar bilan hisob-kitoblar (Kreditda ko'payadi)",
+    "6410": "Budjetga to‘lovlar bo‘yicha qarzdorlik - JShODS (Kreditda ko'payadi)",
+    "6520": "Ijtimoiy soliq bo‘yicha qarzdorlik (Kreditda ko'payadi)",
+    "6530": "ShJBPH (INPS) bo‘yicha qarzdorlik (Kreditda ko'payadi)",
+    "5110": "Hisob-kitob varag‘i - Bank (Kreditdan pul kamayadi)"
+  },
+  "deadlines": {
+    "monthly_tax_reports": "Hisobot oyidan keyingi oyning 15-sanasigacha"
+  }
+}

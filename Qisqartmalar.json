@@ -1,0 +1,72 @@
+[
+  {
+    "id": 1,
+    "section": "qisqartmalar.json",
+    "qisqartma": "MHEKM",
+    "toliq_nomi": "Mehnatga haq to'lashning eng kam miqdori",
+    "narxi": "1,271,000 so'm"
+  },
+  {
+    "id": 2,
+    "section": "qisqartmalar.json",
+    "qisqartma": "BHM",
+    "toliq_nomi": "Bazaviy hisoblash miqdori",
+    "narxi": "412,000 so'm"
+  },
+  {
+    "id": 3,
+    "section": "qisqartmalar.json",
+    "qisqartma": "PBHM",
+    "toliq_nomi": "Pensiyani hisoblashning bazaviy miqdori",
+    "narxi": "412,000 so'm"
+  },
+  {
+    "id": 4,
+    "section": "qisqartmalar.json",
+    "qisqartma": "JShODS",
+    "toliq_nomi": "Jismoniy shaxslardan olinadigan daromad solig'i",
+    "narxi": "12% (Soliq stavkasi)"
+  },
+  {
+    "id": 5,
+    "section": "qisqartmalar.json",
+    "qisqartma": "INPS",
+    "toliq_nomi": "Jamg'arib boriladigan majburiy pensiya badali",
+    "narxi": "0.1% (JShODS ichidan ajratiladi)"
+  },
+  {
+    "id": 6,
+    "section": "qisqartmalar.json",
+    "qisqartma": "QQS",
+    "toliq_nomi": "Qo'shilgan qiymat solig'i",
+    "narxi": "12% (Soliq stavkasi)"
+  },
+  {
+    "id": 7,
+    "section": "qisqartmalar.json",
+    "qisqartma": "IS",
+    "toliq_nomi": "Ijtimoiy soliq",
+    "narxi": "12% (Standart stavka)"
+  },
+  {
+    "id": 8,
+    "section": "qisqartmalar.json",
+    "qisqartma": "DS",
+    "toliq_nomi": "Dividendlardan olinadigan soliq",
+    "narxi": "5% (Rezidentlar uchun)"
+  },
+  {
+    "id": 9,
+    "section": "qisqartmalar.json",
+    "qisqartma": "ESF",
+    "toliq_nomi": "Elektron schyot-faktura",
+    "narxi": "Majburiy elektron hujjat"
+  },
+  {
+    "id": 10,
+    "section": "qisqartmalar.json",
+    "qisqartma": "YaMMT",
+    "toliq_nomi": "Yagona milliy mehnat tizimi",
+    "narxi": "my.mehnat.uz (Davlat portali)"
+  }
+]
