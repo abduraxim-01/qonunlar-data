@@ -53,6 +53,8 @@ const mcpServer = new Server(
   }
 );
 
+const sseTransport = new SSEServerTransport();
+
 // Register tools for MCP
 mcpServer.setRequestHandler(ListToolsRequestSchema, async () => {
   return {
@@ -175,14 +177,12 @@ mcpServer.setRequestHandler(CallToolRequestSchema, async (request) => {
 // ============================================
 
 app.get('/api/sse', (req, res) => {
-  const transport = new SSEServerTransport();
-  transport.start(mcpServer, req, res);
+  sseTransport.start(mcpServer, req, res);
 });
 
 app.post('/api/messages', (req, res) => {
-  const transport = SSEServerTransport.getInstance();
-  if (transport) {
-    transport.routeMessage(req.body);
+  if (sseTransport) {
+    sseTransport.routeMessage(req.body);
     res.status(200).json({ status: 'ok' });
   } else {
     res.status(500).json({ error: 'SSE transport not initialized' });
