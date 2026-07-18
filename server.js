@@ -40,16 +40,19 @@ Object.entries(dataFiles).forEach(([key, filename]) => {
 // ============================================
 
 const transport = new StdioServerTransport();
-const serverOptions = {
-  name: 'qonunlar-mcp',
-  version: '1.0.0',
-  capabilities: {
-    tools: true,
-    resources: false,
-    prompts: false
+const mcpServer = new Server(
+  {
+    name: "qonunlar-mcp",
+    version: "1.0.0",
   },
-};
-const mcpServer = new Server(serverOptions);
+  {
+    capabilities: {
+      tools: {},
+      resources: {},
+      prompts: {}
+    }
+  }
+);
 
 transport.start(mcpServer);
 
