@@ -53,8 +53,7 @@ const mcpServer = new Server(
   }
 );
 
-let currentTransport = null;
-let sseConnectionReadyPromise = null;
+const transports = new Map();
 
 // Register tools for MCP
 mcpServer.setRequestHandler(ListToolsRequestSchema, async () => {
@@ -178,34 +177,32 @@ mcpServer.setRequestHandler(CallToolRequestSchema, async (request) => {
 // ============================================
 
 app.get("/api/sse", async (req, res) => {
-  console.log("Yangi SSE ulanish keldi");
+  const sessionId = req.query.sessionId || "default-session";
   
-  let sseConnectionReadyResolve;
-  sseConnectionReadyPromise = new Promise(resolve => {
-    sseConnectionReadyResolve = resolve;
-  });
-
-  currentTransport = new SSEServerTransport("/api/sse", res);
+  const transport = new SSEServerTransport("/api/sse", res);
+  transports.set(sessionId, transport);
   
-  await mcpServer.connect(currentTransport);
-  sseConnectionReadyResolve();
+  await mcpServer.connect(transport);
   
   req.on("close", () => {
-    console.log("Ulanish yopildi");
-    currentTransport = null;
-    sseConnectionReadyPromise = null;
+    transports.delete(sessionId);
   });
 });
 
-// POST so'rovini qabul qiladigan router
 app.post("/api/sse", async (req, res) => {
-  if (sseConnectionReadyPromise) {
-    await sseConnectionReadyPromise;
+  const sessionId = req.query.sessionId || "default-session";
+  const transport = transports.get(sessionId);
+  
+  if (!transport) {
+    return res.status(400).send("Session not ready yet");
   }
-  if (!currentTransport) {
-    return res.status(400).send("Aktiv SSE sessiyasi topilmadi");
+  
+  try {
+    await transport.handleMessage(req, res);
+  } catch (error) {
+    console.error("Xabarni qayta ishlashda xato:", error);
+    res.status(500).send("Internal Server Error");
   }
-  await currentTransport.handleMessage(req, res);
 });
 
 // ============================================
