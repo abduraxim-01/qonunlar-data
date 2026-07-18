@@ -45,56 +45,45 @@ mcpServer.setRequestHandler(ListToolsRequestSchema, async () => {
   return {
     tools: [
       {
-        name: "soliq_kodeksi",
-        description: "Soliq kodeksidan moddalar, soliq stavkalari va majburiyatlarni qidirish",
+        name: "soliq_kodeksi_qidiruv",
+        description: "O'zbekiston Respublikasi Soliq kodeksidan moddalar, soliq stavkalari va imtiyozlarni dynamic qidirish",
         inputSchema: {
           type: "object",
           properties: {
-            query: { type: "string", description: "Modda raqami yoki qidirilayotgan kalit so'z (masalan: QQS)" }
+            query: { type: "string", description: "Modda raqami yoki kalit so'z (masalan: QQS, mol-mulk solig'i)" }
           },
           required: ["query"]
         }
       },
       {
-        name: "jinoyat_kodeksi",
-        description: "Jinoyat kodeksidan moddalar, jazo turlari va huquqbuzarliklarni qidirish",
+        name: "mehnat_kodeksi_qidiruv",
+        description: "O'zbekiston Respublikasi Mehnat kodeksidan ish vaqti, ta'tillar, shartnomalar va mehnat munosabatlariga oid normalarni dynamic qidirish",
         inputSchema: {
           type: "object",
           properties: {
-            query: { type: "string", description: "Modda raqami yoki jinoyat turi" }
+            query: { type: "string", description: "Modda raqami yoki kalit so'z (masalan: ishdan bo'shatish, ta'til)" }
           },
           required: ["query"]
         }
       },
       {
-        name: "mehnat_kodeksi",
-        description: "Mehnat kodeksidan ish vaqti, ta'tillar va shartnomaga oid normalarni qidirish",
+        name: "kodlar_qidiruv",
+        description: "O'zbekiston Respublikasi qonunlaridagi turli kodlar (masalan, Iqtisodiy faoliyat turlari klassifikatori kodlari) bo'yicha dynamic qidirish",
         inputSchema: {
           type: "object",
           properties: {
-            query: { type: "string", description: "Modda raqami yoki mehnat huquqi masalasi" }
+            query: { type: "string", description: "Kod raqami yoki kalit so'z (masalan: OKED, TN VED)" }
           },
           required: ["query"]
         }
       },
       {
-        name: "fuqarolik_kodeksi",
-        description: "Fuqarolik kodeksidan shartnomalar, mulk huquqi va majburiyatlarni qidirish",
+        name: "farmonlar_qidiruv",
+        description: "O'zbekiston Respublikasi Prezidentining farmonlari va qarorlari bo'yicha dynamic qidirish",
         inputSchema: {
           type: "object",
           properties: {
-            query: { type: "string", description: "Modda raqami yoki fuqarolik munosabati" }
-          },
-          required: ["query"]
-        }
-      },
-      {
-        name: "konstitutsiya",
-        description: "O'zbekiston Respublikasi Konstitutsiyasi moddalarini qidirish",
-        inputSchema: {
-          type: "object",
-          properties: {
-            query: { type: "string", description: "Modda raqami yoki asosiy qonun matni" }
+            query: { type: "string", description: "Farmon raqami, sanasi yoki kalit so'z (masalan: Prezident qarori, yer uchastkasi)" }
           },
           required: ["query"]
         }
@@ -106,58 +95,53 @@ mcpServer.setRequestHandler(ListToolsRequestSchema, async () => {
 // Handle tool calls
 mcpServer.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
-  const query = args?.query;
+  
+  const cleanQuery = decodeURIComponent(args.query || "").trim();
 
+  let client;
   try {
+    client = await pool.connect();
+    
     switch (name) {
-      case "soliq_kodeksi": {
-        const res = await pool.query(
-          "SELECT modda, matn FROM soliq_kodeksi WHERE matn ILIKE $1 OR modda::text = $2 LIMIT 5",
-          [`%${query}%`, query]
+      case "soliq_kodeksi_qidiruv": {
+        const res = await client.query(
+          "SELECT modda, matn FROM soliq_kodeksi WHERE matn ILIKE $1 OR modda::text = $2 LIMIT 3",
+          [`%${cleanQuery}%`, cleanQuery]
         );
         return { content: [{ type: "text", text: JSON.stringify(res.rows) }] };
       }
 
-      case "jinoyat_kodeksi": {
-        const res = await pool.query(
-          "SELECT modda, matn FROM jinoyat_kodeksi WHERE matn ILIKE $1 OR modda::text = $2 LIMIT 5",
-          [`%${query}%`, query]
+      case "mehnat_kodeksi_qidiruv": {
+        const res = await client.query(
+          "SELECT modda, matn FROM mehnat_kodeksi WHERE matn ILIKE $1 OR modda::text = $2 LIMIT 3",
+          [`%${cleanQuery}%`, cleanQuery]
         );
         return { content: [{ type: "text", text: JSON.stringify(res.rows) }] };
       }
 
-      case "mehnat_kodeksi": {
-        const res = await pool.query(
-          "SELECT modda, matn FROM mehnat_kodeksi WHERE matn ILIKE $1 OR modda::text = $2 LIMIT 5",
-          [`%${query}%`, query]
+      case "kodlar_qidiruv": {
+        const res = await client.query(
+          "SELECT kod, matn FROM kodlar WHERE matn ILIKE $1 OR kod::text = $2 LIMIT 3",
+          [`%${cleanQuery}%`, cleanQuery]
         );
         return { content: [{ type: "text", text: JSON.stringify(res.rows) }] };
       }
 
-      case "fuqarolik_kodeksi": {
-        const res = await pool.query(
-          "SELECT modda, matn FROM fuqarolik_kodeksi WHERE matn ILIKE $1 OR modda::text = $2 LIMIT 5",
-          [`%${query}%`, query]
-        );
-        return { content: [{ type: "text", text: JSON.stringify(res.rows) }] };
-      }
-
-      case "konstitutsiya": {
-        const res = await pool.query(
-          "SELECT modda, matn FROM konstitutsiya WHERE matn ILIKE $1 OR modda::text = $2 LIMIT 5",
-          [`%${query}%`, query]
+      case "farmonlar_qidiruv": {
+        const res = await client.query(
+          "SELECT raqam, sana, matn FROM standartlar_far WHERE matn ILIKE $1 OR raqam::text ILIKE $2 OR sana::text ILIKE $3 LIMIT 3",
+          [`%${cleanQuery}%`, `%${cleanQuery}%`, `%${cleanQuery}%`]
         );
         return { content: [{ type: "text", text: JSON.stringify(res.rows) }] };
       }
 
       default:
-        throw new Error(`Noma'lum kodeks turi: ${name}`);
+        throw new Error(`Noma'lum tool chaqirildi: ${name}`);
     }
   } catch (error) {
-    return {
-      content: [{ type: "text", text: `Qidiruvda xatolik yuz berdi: ${error.message}` }],
-      isError: true
-    };
+    return { content: [{ type: "text", text: error.message }], isError: true };
+  } finally {
+    if (client) client.release();
   }
 });
 
