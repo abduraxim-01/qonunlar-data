@@ -39,7 +39,7 @@ Object.entries(dataFiles).forEach(([key, filename]) => {
 // MCP SERVER CONFIGURATION
 // ============================================
 
-const mcpServer = new Server({
+const serverOptions = {
   name: 'qonunlar-mcp',
   version: '1.0.0',
   capabilities: {
@@ -47,7 +47,8 @@ const mcpServer = new Server({
     resources: false,
     prompts: false
   },
-});
+};
+const mcpServer = new Server(serverOptions);
 
 // Register tools for MCP
 mcpServer.setRequestHandler(ListToolsRequestSchema, async () => {
