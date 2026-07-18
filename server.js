@@ -53,6 +53,8 @@ const mcpServer = new Server(
   }
 );
 
+let currentTransport = null;
+
 // Register tools for MCP
 mcpServer.setRequestHandler(ListToolsRequestSchema, async () => {
   return {
@@ -174,19 +176,27 @@ mcpServer.setRequestHandler(CallToolRequestSchema, async (request) => {
 // MCP SSE Transport Endpoints
 // ============================================
 
-app.get('/api/sse', (req, res) => {
-  const transport = new SSEServerTransport();
-
+app.get("/api/sse", async (req, res) => {
+  console.log("Yangi SSE ulanish keldi");
+  
+  // Agarda Groq xabarlarni ham /api/sse ga POST qilayotgan bo'lsa, 
+  // birinchi argumentni ham "/api/sse" qiling:
+  currentTransport = new SSEServerTransport("/api/sse", res);
+  
+  await mcpServer.connect(currentTransport);
+  
+  req.on("close", () => {
+    console.log("Ulanish yopildi");
+    currentTransport = null;
+  });
 });
 
-app.post('/api/messages', (req, res) => {
-  const transport = SSEServerTransport.getInstance();
-  if (transport) {
-    transport.routeMessage(req.body);
-    res.status(200).json({ status: 'ok' });
-  } else {
-    res.status(500).json({ error: 'SSE transport not initialized' });
+// POST so'rovini qabul qiladigan router
+app.post("/api/sse", async (req, res) => {
+  if (!currentTransport) {
+    return res.status(400).send("Aktiv SSE sessiyasi topilmadi");
   }
+  await currentTransport.handleMessage(req, res);
 });
 
 // ============================================
