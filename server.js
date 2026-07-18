@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { ListToolsRequestSchema, CallToolRequestSchema } from '@modelcontextprotocol/sdk/types.js';
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
 
 const app = express();
 app.use(cors());
@@ -39,7 +39,6 @@ Object.entries(dataFiles).forEach(([key, filename]) => {
 // MCP SERVER CONFIGURATION
 // ============================================
 
-const transport = new StdioServerTransport();
 const mcpServer = new Server(
   {
     name: "qonunlar-mcp",
@@ -53,8 +52,6 @@ const mcpServer = new Server(
     }
   }
 );
-
-transport.start(mcpServer);
 
 // Register tools for MCP
 mcpServer.setRequestHandler(ListToolsRequestSchema, async () => {
@@ -174,6 +171,25 @@ mcpServer.setRequestHandler(CallToolRequestSchema, async (request) => {
 });
 
 // ============================================
+// MCP SSE Transport Endpoints
+// ============================================
+
+app.get('/api/sse', (req, res) => {
+  const transport = new SSEServerTransport();
+  transport.start(mcpServer, req, res);
+});
+
+app.post('/api/messages', (req, res) => {
+  const transport = SSEServerTransport.getInstance();
+  if (transport) {
+    transport.routeMessage(req.body);
+    res.status(200).json({ status: 'ok' });
+  } else {
+    res.status(500).json({ error: 'SSE transport not initialized' });
+  }
+});
+
+// ============================================
 // REST API ENDPOINTS (Original)
 // ============================================
 
@@ -211,196 +227,6 @@ app.get('/api/standartlar', (req, res) => {
   res.json(cache.standartlarFar || { error: 'Ma\'lumot topilmadi' });
 });
 
-// ============================================
-// MCP SSE ENDPOINT for Groq Integration
-// ============================================
-
-app.get('/sse', (req, res) => {
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
-  res.setHeader('Connection', 'keep-alive');
-  res.setHeader('Access-Control-Allow-Origin', '*');
-
-  // Send server info event
-  res.write(`event: server_info\n`);
-  res.write(`data: ${JSON.stringify({
-    name: 'qonunlar-mcp',
-    version: '1.0.0',
-    capabilities: {
-      tools: true,
-      resources: false,
-      prompts: false
-    }
-  })}\n\n`);
-
-  // Send tools list
-  res.write(`event: tools_list\n`);
-  res.write(`data: ${JSON.stringify({
-    tools: [
-      'get_all_data',
-      'get_buxgalteriya',
-      'get_kodlar',
-      'get_mehnat_kodeks',
-      'get_qisqartmalar',
-      'get_soliq_kodeks',
-      'get_constants',
-      'get_standartlar'
-    ]
-  })}\n\n`);
-
-  // Keep connection alive
-  const interval = setInterval(() => {
-    res.write(`:keep-alive\n\n`);
-  }, 30000);
-
-  req.on('close', () => {
-    clearInterval(interval);
-    res.end();
-  });
-});
-
-// ============================================
-// MCP INITIALIZE ENDPOINT
-// ============================================
-
-app.post('/api/mcp/initialize', (req, res) => {
-  res.json({
-    protocolVersion: '2024-11-05',
-    capabilities: {
-      tools: {
-        listChanged: true
-      }
-    },
-    serverInfo: {
-      name: 'qonunlar-mcp',
-      version: '1.0.0'
-    }
-  });
-});
-
-// ============================================
-// MCP TOOLS ENDPOINT
-// ============================================
-
-app.get('/api/mcp/tools', (req, res) => {
-  res.json({
-    tools: [
-      {
-        name: 'get_all_data',
-        description: 'Get all legal documents and regulations data',
-        inputSchema: {
-          type: 'object',
-          properties: {},
-          required: []
-        }
-      },
-      {
-        name: 'get_buxgalteriya',
-        description: 'Get Buxgalteriya Hisobi (Accounting Code)',
-        inputSchema: {
-          type: 'object',
-          properties: {},
-          required: []
-        }
-      },
-      {
-        name: 'get_kodlar',
-        description: 'Get Kodlar (Codes)',
-        inputSchema: {
-          type: 'object',
-          properties: {},
-          required: []
-        }
-      },
-      {
-        name: 'get_mehnat_kodeks',
-        description: 'Get Mehnat Kodeksi (Labor Code)',
-        inputSchema: {
-          type: 'object',
-          properties: {},
-          required: []
-        }
-      },
-      {
-        name: 'get_qisqartmalar',
-        description: 'Get Qisqartmalar (Abbreviations)',
-        inputSchema: {
-          type: 'object',
-          properties: {},
-          required: []
-        }
-      },
-      {
-        name: 'get_soliq_kodeks',
-        description: 'Get Soliq Kodeksi (Tax Code)',
-        inputSchema: {
-          type: 'object',
-          properties: {},
-          required: []
-        }
-      },
-      {
-        name: 'get_constants',
-        description: 'Get Constants and fixed values',
-        inputSchema: {
-          type: 'object',
-          properties: {},
-          required: []
-        }
-      },
-      {
-        name: 'get_standartlar',
-        description: 'Get Standartlar (Standards)',
-        inputSchema: {
-          type: 'object',
-          properties: {},
-          required: []
-        }
-      }
-    ]
-  });
-});
-
-// ============================================
-// MCP CALL TOOL ENDPOINT
-// ============================================
-
-app.post('/api/mcp/call', (req, res) => {
-  const { tool, params } = req.body;
-  let result;
-
-  switch (tool) {
-    case 'get_all_data':
-      result = { data: cache, status: 'ok' };
-      break;
-    case 'get_buxgalteriya':
-      result = cache.buxgalteriya || { error: 'Ma\'lumot topilmadi' };
-      break;
-    case 'get_kodlar':
-      result = cache.kodlar || { error: 'Ma\'lumot topilmadi' };
-      break;
-    case 'get_mehnat_kodeks':
-      result = cache.mehnatKodeks || { error: 'Ma\'lumot topilmadi' };
-      break;
-    case 'get_qisqartmalar':
-      result = cache.qisqartmalar || { error: 'Ma\'lumot topilmadi' };
-      break;
-    case 'get_soliq_kodeks':
-      result = cache.soliqKodeks || { error: 'Ma\'lumot topilmadi' };
-      break;
-    case 'get_constants':
-      result = cache.constants || { error: 'Ma\'lumot topilmadi' };
-      break;
-    case 'get_standartlar':
-      result = cache.standartlarFar || { error: 'Ma\'lumot topilmadi' };
-      break;
-    default:
-      return res.status(400).json({ error: `Unknown tool: ${tool}` });
-  }
-
-  res.json({ result, success: true });
-});
-
 // Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
@@ -420,10 +246,8 @@ app.get('/', (req, res) => {
       '/api/constants': 'Constants',
       '/api/standartlar': 'Standartlar',
       '/health': 'Health check',
-      '/sse': 'MCP SSE Endpoint (for Groq)',
-      '/api/mcp/initialize': 'MCP Initialize',
-      '/api/mcp/tools': 'List MCP Tools',
-      '/api/mcp/call': 'Call MCP Tool'
+      '/api/sse': 'MCP SSE Endpoint (for Groq)',
+      '/api/messages': 'MCP Messages Endpoint (for Groq)'
     }
   });
 });
@@ -431,7 +255,6 @@ app.get('/', (req, res) => {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server ${PORT} portda ishlayapti`);
-  console.log(`MCP SSE endpoint: http://localhost:${PORT}/sse`);
-  console.log(`MCP Tools endpoint: http://localhost:${PORT}/api/mcp/tools`);
+  console.log(`MCP SSE endpoint: http://localhost:${PORT}/api/sse`);
+  console.log(`MCP Messages endpoint: http://localhost:${PORT}/api/messages`);
 });
-
