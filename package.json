@@ -1,6 +1,7 @@
 {
   "name": "qonunlar-api",
   "version": "1.0.0",
+  "type": "module",
   "description": "Uzbek laws and regulations API with MCP Server support",
   "main": "server.js",
   "scripts": {
