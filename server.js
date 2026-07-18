@@ -194,15 +194,22 @@ app.post("/api/sse", async (req, res) => {
   const transport = transports.get(sessionId);
   
   if (!transport) {
-    return res.status(400).send("Session not ready yet");
+    return res.status(202).json({ status: "accepted", message: "Session initializing" });
   }
   
   try {
     await transport.handleMessage(req, res);
   } catch (error) {
-    console.error("Xabarni qayta ishlashda xato:", error);
+    console.error("Xabarda xato:", error);
     res.status(500).send("Internal Server Error");
   }
+});
+
+// 3. ENg MUHIMI: DELETE routerini qo'shish (Groq ulanishni yopganda xato bermasligi uchun)
+app.delete("/api/sse", (req, res) => {
+  const sessionId = req.query.sessionId || "default-session";
+  transports.delete(sessionId);
+  res.status(200).json({ status: "disconnected" });
 });
 
 // ============================================
