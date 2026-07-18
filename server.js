@@ -176,7 +176,7 @@ mcpServer.setRequestHandler(CallToolRequestSchema, async (request) => {
 
 app.get('/api/sse', (req, res) => {
   const transport = new SSEServerTransport();
-  transport.start(mcpServer, req, res);
+
 });
 
 app.post('/api/messages', (req, res) => {
