@@ -39,6 +39,7 @@ Object.entries(dataFiles).forEach(([key, filename]) => {
 // MCP SERVER CONFIGURATION
 // ============================================
 
+const transport = new StdioServerTransport();
 const serverOptions = {
   name: 'qonunlar-mcp',
   version: '1.0.0',
@@ -47,6 +48,7 @@ const serverOptions = {
     resources: false,
     prompts: false
   },
+  transport: transport,
 };
 const mcpServer = new Server(serverOptions);
 
