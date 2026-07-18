@@ -42,7 +42,11 @@ Object.entries(dataFiles).forEach(([key, filename]) => {
 const mcpServer = new Server({
   name: 'qonunlar-mcp',
   version: '1.0.0',
-  capabilities: {},
+  capabilities: {
+    tools: true,
+    resources: false,
+    prompts: false
+  },
 });
 
 // Register tools for MCP
