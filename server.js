@@ -54,6 +54,7 @@ const mcpServer = new Server(
 );
 
 let currentTransport = null;
+let sseConnectionReadyPromise = null;
 
 // Register tools for MCP
 mcpServer.setRequestHandler(ListToolsRequestSchema, async () => {
@@ -179,20 +180,28 @@ mcpServer.setRequestHandler(CallToolRequestSchema, async (request) => {
 app.get("/api/sse", async (req, res) => {
   console.log("Yangi SSE ulanish keldi");
   
-  // Agarda Groq xabarlarni ham /api/sse ga POST qilayotgan bo'lsa, 
-  // birinchi argumentni ham "/api/sse" qiling:
+  let sseConnectionReadyResolve;
+  sseConnectionReadyPromise = new Promise(resolve => {
+    sseConnectionReadyResolve = resolve;
+  });
+
   currentTransport = new SSEServerTransport("/api/sse", res);
   
   await mcpServer.connect(currentTransport);
+  sseConnectionReadyResolve();
   
   req.on("close", () => {
     console.log("Ulanish yopildi");
     currentTransport = null;
+    sseConnectionReadyPromise = null;
   });
 });
 
 // POST so'rovini qabul qiladigan router
 app.post("/api/sse", async (req, res) => {
+  if (sseConnectionReadyPromise) {
+    await sseConnectionReadyPromise;
+  }
   if (!currentTransport) {
     return res.status(400).send("Aktiv SSE sessiyasi topilmadi");
   }
