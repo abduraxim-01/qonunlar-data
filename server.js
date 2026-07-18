@@ -1,16 +1,16 @@
-const express = require('express');
-const cors = require('cors');
-const fs = require('fs');
-const path = require('path');
-const { Server } = require('@modelcontextprotocol/sdk/server/index.js');
-const { StdioServerTransport } = require('@modelcontextprotocol/sdk/server/stdio.js');
+import express from 'express';
+import cors from 'cors';
+import fs from 'fs';
+import path from 'path';
+import { Server, ListToolsRequestSchema, CallToolRequestSchema } from '@modelcontextprotocol/sdk/server/index.js';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
 // JSON fayllarni yuklash
-const dataDir = __dirname;
+const dataDir = path.dirname(new URL(import.meta.url).pathname);
 const dataFiles = {
   buxgalteriya: 'BuxgalteriyaHisobi.json',
   kodlar: 'Kodlar.json',
@@ -44,7 +44,7 @@ const mcpServer = new Server({
 });
 
 // Register tools for MCP
-mcpServer.setRequestHandler(require('@modelcontextprotocol/sdk/server/index.js').ListToolsRequestSchema, async () => {
+mcpServer.setRequestHandler(ListToolsRequestSchema, async () => {
   return {
     tools: [
       {
@@ -124,7 +124,7 @@ mcpServer.setRequestHandler(require('@modelcontextprotocol/sdk/server/index.js')
 });
 
 // Handle tool calls
-mcpServer.setRequestHandler(require('@modelcontextprotocol/sdk/server/index.js').CallToolRequestSchema, async (request) => {
+mcpServer.setRequestHandler(CallToolRequestSchema, async (request) => {
   const toolName = request.params.name;
   let result;
 
