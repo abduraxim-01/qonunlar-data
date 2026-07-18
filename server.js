@@ -48,9 +48,10 @@ const serverOptions = {
     resources: false,
     prompts: false
   },
-  transport: transport,
 };
 const mcpServer = new Server(serverOptions);
+
+transport.start(mcpServer);
 
 // Register tools for MCP
 mcpServer.setRequestHandler(ListToolsRequestSchema, async () => {
