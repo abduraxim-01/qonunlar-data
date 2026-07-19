@@ -96,6 +96,10 @@ app.delete("/api/sse", (req, res) => {
   res.status(200).json({ status: "disconnected" });
 });
 
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
 const PORT = process.env.PORT || 3003;
 app.listen(PORT, () => {
   console.log(`Kodlar MCP Server ${PORT}-portda ishlamoqda`);
