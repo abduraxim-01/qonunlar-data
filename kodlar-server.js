@@ -87,7 +87,7 @@ app.post("/api/sse", async (req, res) => {
   if (!transport) {
     return res.status(202).json({ status: "initializing" });
   }
-  await transport.handleMessage(req, res);
+  await transport.handleMessage(req.body);
 });
 
 app.delete("/api/sse", (req, res) => {
