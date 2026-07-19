@@ -144,7 +144,7 @@ app.post("/api/sse", async (req, res) => {
   }
   
   try {
-    await transport.handleMessage(req, res);
+    await transport.handleMessage(req.body);
   } catch (error) {
     console.error("Xabarda xato:", error);
     res.status(500).send("Internal Server Error");
