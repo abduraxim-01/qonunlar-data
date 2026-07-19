@@ -25,7 +25,9 @@ async function testMcpServer() {
         'Accept': 'application/json'
       },
       body: JSON.stringify({
-        type: "ListToolsRequest",
+        jsonrpc: "2.0",
+        method: "tools/list",
+        id: 1,
         params: {}
       })
     });
