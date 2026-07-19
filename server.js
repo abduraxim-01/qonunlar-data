@@ -45,47 +45,15 @@ mcpServer.setRequestHandler(ListToolsRequestSchema, async () => {
   return {
     tools: [
       {
-        name: "soliq_kodeksi_qidiruv",
-        description: "O'zbekiston Respublikasi Soliq kodeksidan moddalar, soliq stavkalari va imtiyozlarni dynamic qidirish",
+        name: "qonun_qidirish",
+        description: "O'zbekiston Respublikasi qonunlaridan (Soliq kodeksi, Mehnat kodeksi, Kodlar, Farmonlar) ma'lumotlarni qidirish",
         inputSchema: {
           type: "object",
           properties: {
-            query: { type: "string", description: "Modda raqami yoki kalit so'z (masalan: QQS, mol-mulk solig'i)" }
+            tur: { type: "string", description: "Qidirilayotgan qonun turi (soliq, mehnat, kodlar, farmonlar)", enum: ["soliq", "mehnat", "kodlar", "farmonlar"] },
+            query: { type: "string", description: "Modda raqami, sanasi yoki kalit so'z" }
           },
-          required: ["query"]
-        }
-      },
-      {
-        name: "mehnat_kodeksi_qidiruv",
-        description: "O'zbekiston Respublikasi Mehnat kodeksidan ish vaqti, ta'tillar, shartnomalar va mehnat munosabatlariga oid normalarni dynamic qidirish",
-        inputSchema: {
-          type: "object",
-          properties: {
-            query: { type: "string", description: "Modda raqami yoki kalit so'z (masalan: ishdan bo'shatish, ta'til)" }
-          },
-          required: ["query"]
-        }
-      },
-      {
-        name: "kodlar_qidiruv",
-        description: "O'zbekiston Respublikasi qonunlaridagi turli kodlar (masalan, Iqtisodiy faoliyat turlari klassifikatori kodlari) bo'yicha dynamic qidirish",
-        inputSchema: {
-          type: "object",
-          properties: {
-            query: { type: "string", description: "Kod raqami yoki kalit so'z (masalan: OKED, TN VED)" }
-          },
-          required: ["query"]
-        }
-      },
-      {
-        name: "farmonlar_qidiruv",
-        description: "O'zbekiston Respublikasi Prezidentining farmonlari va qarorlari bo'yicha dynamic qidirish",
-        inputSchema: {
-          type: "object",
-          properties: {
-            query: { type: "string", description: "Farmon raqami, sanasi yoki kalit so'z (masalan: Prezident qarori, yer uchastkasi)" }
-          },
-          required: ["query"]
+          required: ["tur", "query"]
         }
       }
     ]
@@ -96,14 +64,19 @@ mcpServer.setRequestHandler(ListToolsRequestSchema, async () => {
 mcpServer.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
   
-  const cleanQuery = decodeURIComponent(args.query || "").trim();
+  if (name !== "qonun_qidirish") {
+    throw new Error(`Noma'lum tool chaqirildi: ${name}`);
+  }
+
+  const { tur, query } = args;
+  const cleanQuery = decodeURIComponent(query || "").trim();
 
   let client;
   try {
     client = await pool.connect();
     
-    switch (name) {
-      case "soliq_kodeksi_qidiruv": {
+    switch (tur) {
+      case "soliq": {
         const res = await client.query(
           "SELECT modda, matn FROM soliq_kodeksi WHERE matn ILIKE $1 OR modda::text = $2 LIMIT 3",
           [`%${cleanQuery}%`, cleanQuery]
@@ -111,7 +84,7 @@ mcpServer.setRequestHandler(CallToolRequestSchema, async (request) => {
         return { content: [{ type: "text", text: JSON.stringify(res.rows) }] };
       }
 
-      case "mehnat_kodeksi_qidiruv": {
+      case "mehnat": {
         const res = await client.query(
           "SELECT modda, matn FROM mehnat_kodeksi WHERE matn ILIKE $1 OR modda::text = $2 LIMIT 3",
           [`%${cleanQuery}%`, cleanQuery]
@@ -119,7 +92,7 @@ mcpServer.setRequestHandler(CallToolRequestSchema, async (request) => {
         return { content: [{ type: "text", text: JSON.stringify(res.rows) }] };
       }
 
-      case "kodlar_qidiruv": {
+      case "kodlar": {
         const res = await client.query(
           "SELECT kod, matn FROM kodlar WHERE matn ILIKE $1 OR kod::text = $2 LIMIT 3",
           [`%${cleanQuery}%`, cleanQuery]
@@ -127,7 +100,7 @@ mcpServer.setRequestHandler(CallToolRequestSchema, async (request) => {
         return { content: [{ type: "text", text: JSON.stringify(res.rows) }] };
       }
 
-      case "farmonlar_qidiruv": {
+      case "farmonlar": {
         const res = await client.query(
           "SELECT raqam, sana, matn FROM standartlar_far WHERE matn ILIKE $1 OR raqam::text ILIKE $2 OR sana::text ILIKE $3 LIMIT 3",
           [`%${cleanQuery}%`, `%${cleanQuery}%`, `%${cleanQuery}%`]
@@ -136,7 +109,7 @@ mcpServer.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       default:
-        throw new Error(`Noma'lum tool chaqirildi: ${name}`);
+        throw new Error(`Noma'lum qonun turi: ${tur}`);
     }
   } catch (error) {
     return { content: [{ type: "text", text: error.message }], isError: true };
