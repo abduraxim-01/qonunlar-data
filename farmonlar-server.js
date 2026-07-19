@@ -5,7 +5,7 @@ import { ListToolsRequestSchema, CallToolRequestSchema } from "@modelcontextprot
 import pg from "pg";
 
 const app = express();
-app.use(express.json());
+
 
 // Faqat Farmonlarga ulanadigan alohida DB Pool
 const pool = new pg.Pool({
@@ -87,7 +87,7 @@ app.post("/api/sse", async (req, res) => {
   if (!transport) {
     return res.status(202).json({ status: "initializing" });
   }
-  await transport.handleMessage(req.body);
+  await transport.handleMessage(req, res);
 });
 
 app.delete("/api/sse", (req, res) => {
