@@ -88,6 +88,12 @@ app.post("/api/sse", async (req, res) => {
     return res.status(202).json({ status: "initializing" });
   }
   await transport.handleMessage(req, res);
+    
+  // ENg muhimi: Express so'rovini muvaffaqiyatli yakunlash!
+  // MCP standartiga ko'ra, POST so'rovi qabul qilingach, 200 yoki 202 status bilan yopilishi shart.
+  if (!res.writableEnded) {
+      res.status(200).end();
+  }
 });
 
 app.delete("/api/sse", (req, res) => {
