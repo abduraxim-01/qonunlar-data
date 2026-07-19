@@ -80,14 +80,14 @@ app.get("/api/sse", async (req, res) => {
   });
 });
 
-app.post("/api/sse", async (req, res) => {
+app.post("/api/sse", express.json(), async (req, res) => {
   const sessionId = req.query.sessionId || "kodlar-session";
   const transport = transports.get(sessionId);
   
   if (!transport) {
     return res.status(202).json({ status: "initializing" });
   }
-  await transport.handleMessage(req, res);
+  await transport.handleMessage(req.body);
     
   // ENg muhimi: Express so'rovini muvaffaqiyatli yakunlash!
   // MCP standartiga ko'ra, POST so'rovi qabul qilingach, 200 yoki 202 status bilan yopilishi shart.
