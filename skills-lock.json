@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "use-freellmapi": {
+      "source": "ivy00johns/skill-madness",
+      "sourceType": "github",
+      "skillPath": "skills/workflows/use-freellmapi/SKILL.md",
+      "computedHash": "b48b6df83b127d0fc860f6c129d473d320b3ed76d0656720f07dd5611cf46fce"
+    }
+  }
+}
